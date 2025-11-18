@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  # データベースコンテナ
+  db:
+    image: postgres:16-alpine # 軽量なPostgreSQL 16
+    container_name: todo-db
+    environment:
+      POSTGRES_DB: todo_db # データベース名
+      POSTGRES_USER: user # ユーザー名
+      POSTGRES_PASSWORD: password # パスワード
+    ports:
+      - "5432:5432" # ホストの5432ポートに公開
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # データ永続化
+
+  # Spring Bootアプリケーションコンテナ（任意：起動確認用）
+  app:
+    build: . # Dockerfileがある場合はビルド
+    container_name: todo-app
+    depends_on:
+      - db # DB起動後に実行
+    environment:
+      # DB接続情報を環境変数で設定
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/todo_db
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+    ports:
+      - "8080:8080" # ホストの8080ポートに公開
+    # ※開発時はIntelliJから直接実行するため、このコンテナはスキップしてもOKです。
+
+volumes:
+  postgres_data:
