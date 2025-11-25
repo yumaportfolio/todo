@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ja">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>お知らせ管理 - メイン</title>
+    <style>
+        :root {
+            --accent: #005bac;
+            --accent-light: #e6f1fd;
+            --border: #d0d7de;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+            margin: 0;
+            background: #f7f7f9;
+            color: #222
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 32px auto;
+            padding: 0 24px
+        }
+
+        h1 {
+            margin: 0 0 24px;
+            font-size: 1.6rem;
+            color: #111
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+            padding: 20px;
+            margin-bottom: 20px
+        }
+
+        .card-title {
+            font-weight: 600;
+            margin-bottom: 16px;
+            font-size: 1rem;
+            color: #0b2545
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(260px, 1fr));
+            grid-template-areas: 'title category' 'post period';
+            gap: 16px 24px
+        }
+
+        .filter-field {
+            display: flex;
+            flex-direction: column;
+            font-size: .9rem
+        }
+
+        .filter-title {
+            grid-area: title
+        }
+
+        .filter-category {
+            grid-area: category
+        }
+
+        .filter-post {
+            grid-area: post
+        }
+
+        .filter-period {
+            grid-area: period
+        }
+
+        .filter-field label {
+            font-weight: 600;
+            margin-bottom: 6px
+        }
+
+        .filter-field input,
+        .filter-field select {
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: .95rem
+        }
+
+        .period-field {
+            display: flex;
+            gap: 8px;
+            align-items: center
+        }
+
+        .period-field input {
+            flex: 1
+        }
+
+        .period-field span {
+            white-space: nowrap
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 16px;
+            flex-wrap: wrap
+        }
+
+        .filter-actions button,
+        .filter-actions a {
+            padding: 10px 20px;
+            font-weight: 600;
+            border-radius: 4px;
+            border: 1px solid var(--accent);
+            text-decoration: none;
+            text-align: center
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff
+        }
+
+        .btn-secondary {
+            background: #fff;
+            color: var(--accent)
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 24px 0 12px;
+            flex-wrap: wrap;
+            gap: 12px
+        }
+
+        .result-title {
+            font-weight: 600
+        }
+
+        .result-meta {
+            display: flex;
+            gap: 16px;
+            color: #444;
+            font-size: .9rem
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border: 1px solid var(--border)
+        }
+
+        th,
+        td {
+            border-bottom: 1px solid var(--border);
+            padding: 10px;
+            text-align: left;
+            font-size: .95rem
+        }
+
+        th {
+            background: var(--accent-light);
+            font-weight: 600;
+            color: #0b2545
+        }
+
+        tbody tr:hover {
+            background: #f5f9ff
+        }
+
+        .result-table-wrapper {
+            max-height: 320px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            margin-top: 12px;
+            background: #fff
+        }
+
+        .result-table-wrapper thead th {
+            position: sticky;
+            top: 0;
+            z-index: 1
+        }
+
+        .button-bar {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-start;
+            margin: 0;
+            flex-wrap: wrap
+        }
+
+        .button-bar button {
+            min-width: 120px;
+            padding: 10px 0;
+            font-weight: 600;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: #fff
+        }
+
+        .action-panel {
+            display: flex;
+            justify-content: flex-start;
+            margin: -8px 0 24px
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            gap: 16px;
+            margin-top: 12px;
+            font-size: .9rem
+        }
+
+        .pagination a {
+            padding: 6px 12px;
+            border: 1px solid var(--accent);
+            border-radius: 4px;
+            color: var(--accent);
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .pagination a:not(.disabled):hover {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .pagination a.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+            color: #999;
+            border-color: #ccc;
+        }
+
+        .error-dialog-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 16px
+        }
+
+        .error-dialog {
+            background: #fff;
+            border-radius: 10px;
+            max-width: 420px;
+            width: 100%;
+            padding: 24px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            gap: 12px
+        }
+
+        .error-dialog h2 {
+            margin: 0 0 12px;
+            font-size: 1.1rem;
+            color: #b91c1c
+        }
+
+        .error-dialog ul {
+            margin: 0 0 16px;
+            padding-left: 20px;
+            color: #444;
+            font-size: .95rem
+        }
+
+        .error-dialog button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border);
+            padding: 8px 18px;
+            border-radius: 6px;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            align-self: flex-end
+        }
+
+        .confirm-dialog-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(8, 13, 33, 0.35);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 16px
+        }
+
+        .confirm-dialog {
+            background: #fff;
+            border-radius: 10px;
+            max-width: 420px;
+            width: 100%;
+            padding: 24px;
+            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
+            display: flex;
+            flex-direction: column;
+            gap: 12px
+        }
+
+        .confirm-dialog h2 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #0b2545
+        }
+
+        .confirm-dialog p {
+            margin: 0;
+            color: #333;
+            line-height: 1.5
+        }
+
+        .confirm-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px
+        }
+
+        .confirm-actions button {
+            min-width: 90px;
+            padding: 8px 18px;
+            border-radius: 6px;
+            font-weight: 600;
+            border: 1px solid var(--border);
+            cursor: pointer
+        }
+
+        .confirm-actions .btn-cancel {
+            background: #fff;
+            color: #0f172a
+        }
+
+        .confirm-actions .btn-ok {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent)
+        }
+
+        @media (max-width: 600px) {
+            .filter-grid {
+                grid-template-columns: 1fr;
+                grid-template-areas: 'title' 'category' 'post' 'period'
+            }
+
+            .filter-actions,
+            .button-bar {
+                flex-direction: column
+            }
+
+            .button-bar button,
+            .filter-actions button,
+            .filter-actions a {
+                width: 100%
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <h1>お知らせToDo管理</h1>
+
+        <section class="card">
+            <div class="card-title">検索条件</div>
+            <form id="searchForm" th:object="${searchForm}" th:action="@{/notice}" method="get" class="search-form" onsubmit="return validateSearchForm(this)" novalidate>
+                <input type="hidden" name="searched" value="true" />
+                <div class="filter-grid">
+                    <div class="filter-field filter-title">
+                        <label for="title">お知らせタイトル</label>
+                        <input id="title" type="text" th:field="*{title}" />
+                    </div>
+                    <div class="filter-field filter-category">
+                        <label for="category">お知らせ区分</label>
+                        <select id="category" th:field="*{category}">
+                            <option value="">-- 全て --</option>
+                            <option th:each="opt : ${categoryOptions}"
+                                    th:value="${opt.code}"
+                                    th:text="${opt.label}"></option>
+                        </select>
+                    </div>
+                    <div class="filter-field filter-post">
+                        <label for="postDate">掲載日</label>
+                        <input id="postDate" type="date" th:field="*{postDate}" />
+                    </div>
+                    <div class="filter-field filter-period">
+                        <label>適用期間</label>
+                        <div class="period-field">
+                            <input type="date" th:field="*{from}" />
+                            <span>〜</span>
+                            <input type="date" th:field="*{to}" />
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-actions">
+                    <button type="submit" class="btn-primary">検索</button>
+                    <a th:href="@{/notice}" class="btn-secondary">条件クリア</a>
+                </div>
+            </form>
+            <form id="rerunSearchForm" th:object="${searchForm}" th:action="@{/notice}" method="get" style="display:none">
+                <input type="hidden" th:field="*{searched}" />
+                <input type="hidden" th:field="*{title}" />
+                <input type="hidden" th:field="*{category}" />
+                <input type="hidden" th:field="*{postDate}" />
+                <input type="hidden" th:field="*{from}" />
+                <input type="hidden" th:field="*{to}" />
+                <input type="hidden" th:field="*{page}" />
+                <input type="hidden" th:field="*{size}" />
+            </form>
+        </section>
+
+        <section class="card">
+            <div class="result-header">
+                <div>
+                    <div class="result-title">検索結果</div>
+                    <div class="result-meta">
+                        <span>件数: <span th:text="${page.totalElements}">0</span></span>
+                        <span th:if="${showResults}">ページ: <span th:text="${page.number + 1}">1</span> / <span th:text="${page.totalPages}">1</span></span>
+                    </div>
+                </div>
+                <div class="pagination" th:if="${showResults}">
+                    <a th:href="${page.number > 0} ? @{/notice(page=${page.number - 1},size=${page.size},title=${searchForm.title},category=${searchForm.category},postDate=${searchForm.postDate},from=${searchForm.from},to=${searchForm.to},searched=true)} : '#'"
+                       th:classappend="${page.number > 0} ? '' : 'disabled'">前へ</a>
+                    <a th:href="${page.number + 1 < page.totalPages} ? @{/notice(page=${page.number + 1},size=${page.size},title=${searchForm.title},category=${searchForm.category},postDate=${searchForm.postDate},from=${searchForm.from},to=${searchForm.to},searched=true)} : '#'"
+                       th:classappend="${page.number + 1 < page.totalPages} ? '' : 'disabled'">次へ</a>
+                </div>
+            </div>
+
+            <form id="actionForm" th:action="@{/notice/delete}" method="post" th:object="${searchForm}">
+                <input type="hidden" name="selectedId" id="selectedId" />
+                <input type="hidden" th:field="*{title}" />
+                <input type="hidden" th:field="*{category}" />
+                <input type="hidden" th:field="*{postDate}" />
+                <input type="hidden" th:field="*{from}" />
+                <input type="hidden" th:field="*{to}" />
+                <input type="hidden" th:field="*{page}" />
+                <input type="hidden" th:field="*{size}" />
+                <input type="hidden" th:field="*{searched}" />
+                <th:block th:if="${_csrf != null}">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                </th:block>
+
+                <div class="result-table-wrapper">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th></th>
+                            <th>タイトル</th>
+                            <th>区分</th>
+                            <th>掲載日</th>
+                            <th>適用開始</th>
+                            <th>適用終了</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:if="${!showResults}">
+                            <td colspan="6" style="text-align:center;color:#777;padding:40px 0">検索条件を入力し、検索ボタンを押してください。</td>
+                        </tr>
+                        <tr th:each="n : ${page.content}" th:if="${showResults}">
+                            <td>
+                                <input type="radio" name="row" th:value="${n.id}" th:onchange="selectRow(this)" />
+                            </td>
+                            <td th:text="${n.title}">title</td>
+                            <td th:text="${categoryLabels[n.categoryCode]}">cat</td>
+                            <td th:text="${n.postDate}">post</td>
+                            <td th:text="${n.startDate}">start</td>
+                            <td th:text="${n.endDate}">end</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </form>
+        </section>
+
+        <!-- アクションボタン -->
+        <div class="action-panel">
+            <div class="button-bar">
+                <button type="button" class="btn-secondary" onclick="openCreate()">登録</button>
+                <button type="button" class="btn-secondary" onclick="openEdit()">更新</button>
+                <button type="button" class="btn-secondary" onclick="submitDelete()">削除</button>
+            </div>
+        </div>
+
+        <!-- URLクリーンアップ用スクリプト -->
+        <th:block th:if="${showResults}">
+            <script>
+                if (window.location.search) {
+                    window.history.replaceState(null, '', window.location.pathname);
+                }
+            </script>
+        </th:block>
+        <!-- 処理完了メッセージ表示 -->
+        <script th:if="${completedMessage != null}" th:inline="javascript">
+            document.addEventListener('DOMContentLoaded', function(){
+                showSuccessDialog(/*[[${completedMessage}]]*/ '処理が完了しました。');
+            });
+        </script>
+    </main>
+
+    <!-- エラーダイアログ -->
+    <div class="error-dialog-overlay" id="errorDialog">
+        <div class="error-dialog">
+            <h2 id="errorDialogTitle">入力エラー</h2>
+            <ul id="errorList"></ul>
+            <button type="button" onclick="closeErrorDialog()">閉じる</button>
+        </div>
+    </div>
+
+    <!-- 削除確認ダイアログ -->
+    <div class="confirm-dialog-overlay" id="confirmDialog">
+        <div class="confirm-dialog">
+            <h2>確認</h2>
+            <p>削除してもよろしいですか？</p>
+            <div class="confirm-actions">
+                <button type="button" class="btn-ok" onclick="confirmDeleteAction()">はい</button>
+                <button type="button" class="btn-cancel" onclick="closeConfirmDialog()">いいえ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成功ダイアログ -->
+    <div class="confirm-dialog-overlay" id="successDialog">
+        <div class="confirm-dialog">
+            <h2>完了</h2>
+            <p id="successMessage">処理が完了しました。</p>
+            <div class="confirm-actions">
+                <button type="button" class="btn-ok" onclick="closeSuccessDialogAndRerun()">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ページ固有スクリプト -->
+    <script>
+        /**
+         * テーブル行を選択してIDを設定
+         */
+        function selectRow(radio) {
+            document.getElementById('selectedId').value = radio.value;
+        }
+
+        /**
+         * 新規登録画面を別ウィンドウで開く
+         */
+        function openCreate() {
+            window.open('/notice/new', '_blank', 'width=900,height=700');
+        }
+
+        /**
+         * 更新画面を別ウィンドウで開く（行選択必須）
+         */
+        function openEdit() {
+            const id = document.getElementById('selectedId').value;
+            if (!id) {
+                showRowSelectionError();
+                return;
+            }
+            window.open(`/notice/edit?id=${id}`, 'notice-edit', 'width=960,height=720');
+        }
+
+        /**
+         * 削除確認ダイアログを表示（行選択必須）
+         */
+        function submitDelete() {
+            const id = document.getElementById('selectedId').value;
+            if (!id) {
+                showRowSelectionError();
+                return;
+            }
+            openConfirmDialog();
+        }
+    </script>
+
+    <script th:src="@{/js/notice-validation.js}"></script>
+    <script th:src="@{/js/notice-main.js}"></script>
+</body>
+
+</html>

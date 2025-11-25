@@ -1,15 +1,15 @@
 # ===================================
-# ???????? (PostgreSQL on Docker)
+# データベース設定 (PostgreSQL on Docker)
 # ===================================
-# ????: ?????????????
-# ????: application-dev.properties????????????????????
+# 本番環境では環境変数を使用してください
+# 開発環境: application-dev.propertiesを作成して設定
 spring.datasource.url=${DB_URL:jdbc:postgresql://localhost:25432/todo_db}
 spring.datasource.username=${DB_USERNAME:user}
 spring.datasource.password=${DB_PASSWORD:changeme}
 spring.datasource.driver-class-name=org.postgresql.Driver
 
 # ===================================
-# JPA / Hibernate??
+# JPA / Hibernate設定
 # ===================================
 spring.jpa.show-sql=true
 spring.jpa.hibernate.ddl-auto=update
@@ -17,14 +17,15 @@ spring.jpa.properties.hibernate.format_sql=true
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
 
 # ===================================
-# Thymeleaf??
+# Thymeleaf設定
 # ===================================
 spring.thymeleaf.cache=false
 spring.thymeleaf.prefix=classpath:/templates/
 spring.thymeleaf.suffix=.html
 
 # ===================================
-# ??????
+# サーバー設定
 # ===================================
 server.port=8080
 spring.devtools.restart.enabled=true
+

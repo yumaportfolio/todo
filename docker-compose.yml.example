@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_DB: ${DB_NAME:-todo_db} # データベース名
       POSTGRES_USER: ${DB_USER:-user} # ユーザー名
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme} # パスワード（.envファイルで設定推奨）
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme} # パスワード（.envで設定）
     ports:
       - "25432:5432" # ホストの25432ポートに公開
     volumes:
@@ -30,3 +30,4 @@ services:
 
 volumes:
   postgres_data:
+

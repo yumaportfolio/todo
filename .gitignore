@@ -35,3 +35,56 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### 機密情報を含む設定ファイル ###
+# 環境固有の設定ファイルは除外（application.propertiesはコミット可）
+application-*.properties
+!application.properties
+*.env
+.env*
+!.env.example
+
+# Docker override設定（ローカル環境用）
+docker-compose.override.yml
+
+### ログファイル ###
+*.log
+logs/
+log/
+
+### データベースファイル ###
+*.db
+*.sqlite
+*.sqlite3
+data/
+
+### macOS ###
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+### 一時ファイル ###
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.~*
+
+### バックアップファイル ###
+*.bak
+*.backup
+*.old
+
+### その他 ###
+# テスト用データ（個人情報含む可能性）
+test-data/
+# シークレット
+secrets/
+*.key
+*.pem
+*.p12
+*.jks
+
