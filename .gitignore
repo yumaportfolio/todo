@@ -88,3 +88,6 @@ secrets/
 *.p12
 *.jks
 
+# 内部用ドキュメント（開発者向け、公開不要）
+docs/internal/
+

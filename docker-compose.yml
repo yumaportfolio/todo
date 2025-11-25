@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_DB: ${DB_NAME:-todo_db} # データベース名
       POSTGRES_USER: ${DB_USER:-user} # ユーザー名
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme} # パスワード（.envファイルで設定推奨）
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password} # パスワード（開発環境デフォルト）
     ports:
       - "25432:5432" # ホストの25432ポートに公開
     volumes:
@@ -23,7 +23,7 @@ services:
       # DB接続情報を環境変数で設定
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${DB_NAME:-todo_db}
       SPRING_DATASOURCE_USERNAME: ${DB_USER:-user}
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-changeme}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-password}
     ports:
       - "8080:8080" # ホストの8080ポートに公開
     # ※開発時はIntelliJから直接実行するため、このコンテナはスキップしてもOKです。

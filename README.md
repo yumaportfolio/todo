@@ -1,13 +1,14 @@
-# お知らせToDo管理システム
+# お知らせ管理システム
 
 Spring Boot + PostgreSQLで構築されたお知らせ管理アプリケーションです。
 
 ## 機能
 
 - お知らせの登録・更新・削除
-- 条件による検索機能
+- 多様な検索機能（タイトル、区分、日付範囲）
 - ページング対応の一覧表示
-- 日付範囲バリデーション
+- クライアント/サーバー両側のバリデーション
+- 日付範囲チェック機能
 
 ## 技術スタック
 
@@ -16,13 +17,47 @@ Spring Boot + PostgreSQLで構築されたお知らせ管理アプリケーシ�
 - **データベース**: PostgreSQL 16
 - **テンプレートエンジン**: Thymeleaf
 - **ビルドツール**: Gradle
+- **コンテナ**: Docker & Docker Compose
 
-## セットアップ
+---
+
+## クイックスタート
 
 ### 前提条件
 
-- Java 21以上
-- Docker & Docker Compose
+以下のいずれかをインストール：
+- **Docker Desktop**（推奨 - 最も簡単）
+- または **Java 21 + PostgreSQL**
+
+### 方法A: Docker Composeで起動（推奨）
+
+```bash
+# 1. リポジトリをクローン
+git clone <repository-url>
+cd todo
+
+# 2. データベースを起動
+docker-compose up -d db
+
+# 3. アプリケーションを起動（10秒待機後）
+sleep 10
+./gradlew bootRun
+```
+
+**アクセス**: http://localhost:8080
+
+### 方法B: 完全Docker環境
+
+```bash
+# すべてDocker Composeで起動
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+**アクセス**: http://localhost:8080
+
+---
+
+## 開発環境セットアップ
 
 ### 1. リポジトリのクローン
 
@@ -31,74 +66,93 @@ git clone <repository-url>
 cd todo
 ```
 
-### 2. 環境変数の設定
-
-開発環境用の設定ファイルを作成します：
-
-#### .envファイルの作成（Docker用）
+### 2. データベースの起動
 
 ```bash
-cp .env.example .env
-```
-
-`.env`ファイルを編集して、データベースのパスワードを設定：
-
-```env
-DB_USER=user
-DB_PASSWORD=your_password_here
-DB_NAME=todo_db
-```
-
-#### application-dev.propertiesの作成（Spring Boot用）
-
-```bash
-cp src/main/resources/application.properties.example src/main/resources/application-dev.properties
-```
-
-`application-dev.properties`を編集して、データベース接続情報を設定：
-
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:25432/todo_db
-spring.datasource.username=user
-spring.datasource.password=your_password_here
-```
-
-### 3. データベースの起動
-
-```bash
+# Docker Composeでデータベース起動
 docker-compose up -d db
-```
 
-データベースが起動したことを確認：
-
-```bash
+# 起動確認（STATUSがUpになっていればOK）
 docker-compose ps
 ```
 
-### 4. アプリケーションの起動
+### 3. アプリケーションの起動
 
-#### 方法1: IDEから起動（推奨）
+#### IntelliJ IDEAから起動（推奨）
 
-IntelliJ IDEAで`TodoApplication.java`を右クリックして「Run」を選択
+1. `src/main/java/com/example/todo/TodoApplication.java` を開く
+2. クラス名の左の▶️をクリック
+3. 「Run 'TodoApplication'」を選択
 
-起動時にプロファイルを指定：
-- VM Options: `-Dspring.profiles.active=dev`
-
-#### 方法2: Gradleコマンドから起動
+#### コマンドラインから起動
 
 ```bash
-./gradlew bootRun --args='--spring.profiles.active=dev'
+./gradlew bootRun
 ```
 
-### 5. アプリケーションへのアクセス
+### 4. アクセス
 
-ブラウザで以下のURLにアクセス：
+ブラウザで http://localhost:8080 を開く
 
+---
+
+## 他の環境での動作確認
+
+### 他のPCで動作確認
+
+```bash
+# GitHubからクローン
+git clone <repository-url>
+cd todo
+
+# Docker Composeで起動
+docker-compose -f docker-compose.prod.yml up -d
+
+# アクセス
+# http://localhost:8080
 ```
-http://localhost:8080
+
+### VPS/クラウドサーバーでのデプロイ
+
+```bash
+# サーバーにSSH接続
+ssh user@server-ip
+
+# Dockerインストール
+curl -fsSL https://get.docker.com | sh
+
+# リポジトリクローン
+git clone <repository-url>
+cd todo
+
+# 環境変数設定（本番環境用）
+cp .env.prod.example .env
+nano .env  # パスワードを変更
+
+# 起動
+docker-compose -f docker-compose.prod.yml up -d
+
+# ファイアウォール設定
+sudo ufw allow 8080
+
+# アクセス
+# http://server-ip:8080
 ```
 
-自動的に`/notice`にリダイレクトされ、お知らせ一覧画面が表示されます。
+### インターネット経由で共有（ngrok）
+
+```bash
+# ローカルで起動
+./gradlew bootRun
+
+# 別ターミナルでngrok起動
+ngrok http 8080
+
+# 表示されたURLを共有
+# https://xxxx-xxx-xxx.ngrok-free.app
+```
+
+---
 
 ## プロジェクト構成
 
@@ -107,35 +161,61 @@ todo/
 ├── src/
 │   ├── main/
 │   │   ├── java/com/example/todo/
-│   │   │   ├── controller/       # コントローラー層
-│   │   │   ├── service/          # サービス層
-│   │   │   ├── repository/       # リポジトリ層
-│   │   │   ├── domain/           # エンティティ・列挙型
-│   │   │   └── TodoApplication.java
+│   │   │   ├── controller/          # コントローラー層
+│   │   │   │   ├── form/            # フォームオブジェクト
+│   │   │   │   └── validation/      # バリデーション設定
+│   │   │   ├── service/             # サービス層
+│   │   │   │   └── query/           # 検索条件
+│   │   │   ├── repository/          # リポジトリ層
+│   │   │   ├── domain/              # エンティティ・列挙型
+│   │   │   └── TodoApplication.java # メインクラス
 │   │   └── resources/
-│   │       ├── templates/        # Thymeleafテンプレート
-│   │       ├── static/js/        # JavaScript
-│   │       └── application.properties
-│   └── test/                     # テストコード
-├── doc/                          # 設計ドキュメント
-├── docker-compose.yml            # Docker設定
-├── build.gradle                  # Gradle設定
+│   │       ├── templates/           # Thymeleafテンプレート
+│   │       ├── static/js/           # JavaScript
+│   │       ├── application.properties
+│   │       └── messages.properties
+│   └── test/                        # テストコード
+├── doc/                             # 設計ドキュメント
+├── docker-compose.yml               # 開発環境用Docker設定
+├── docker-compose.prod.yml          # 本番環境用Docker設定
+├── Dockerfile                       # Dockerイメージ定義
+├── build.gradle                     # Gradle設定
 └── README.md
 ```
 
-## テスト実行
+---
+
+## テスト・ビルド
+
+### テスト実行
 
 ```bash
 ./gradlew test
 ```
 
-## ビルド
+### ビルド
 
 ```bash
 ./gradlew build
 ```
 
-成果物は`build/libs/`に生成されます。
+JARファイルは `build/libs/todo-0.0.1-SNAPSHOT.jar` に生成されます。
+
+### JARファイルで起動
+
+```bash
+# ビルド
+./gradlew bootJar
+
+# データベース起動
+docker-compose up -d db
+sleep 10
+
+# JAR実行
+java -jar build/libs/todo-0.0.1-SNAPSHOT.jar
+```
+
+---
 
 ## セキュリティ
 
@@ -143,12 +223,64 @@ todo/
 
 このプロジェクトでは、以下のファイルに機密情報を含めないようにしています：
 
-- ✅ `application.properties` - 環境変数を使用
-- ✅ `docker-compose.yml` - 環境変数を使用
-- ❌ `.env` - .gitignoreで除外（Gitで管理しない）
-- ❌ `application-dev.properties` - .gitignoreで除外
+| ファイル | 公開 | 説明 |
+|---------|------|------|
+| `application.properties` | ✅ 公開 | 環境変数使用、デフォルト値は開発用 |
+| `docker-compose.yml` | ✅ 公開 | 環境変数使用、デフォルト値は開発用 |
+| `.env` | ❌ 除外 | 実際のパスワード（.gitignore） |
+| `application-dev.properties` | ❌ 除外 | ローカル設定（.gitignore） |
 
-詳細は`SECURITY_CHECKLIST.md`を参照してください。
+### デフォルト値について
+
+**開発環境用のデフォルト値**:
+- ユーザー名: `user`
+- パスワード: `password`
+- データベース名: `todo_db`
+
+**本番環境では必ず環境変数で設定してください**
+
+```bash
+export DB_USERNAME=prod_user
+export DB_PASSWORD=STRONG_PASSWORD_HERE
+./gradlew bootRun
+```
+
+---
+
+## トラブルシューティング
+
+### ポート8080が既に使用されている
+
+```bash
+# 使用中のプロセスを停止
+lsof -ti:8080 | xargs kill -9
+
+# または、別のポートを使用
+java -Dserver.port=8081 -jar build/libs/todo-0.0.1-SNAPSHOT.jar
+```
+
+### データベース接続エラー
+
+```bash
+# データベースを再起動
+docker-compose down -v
+docker-compose up -d db
+sleep 10
+./gradlew bootRun
+```
+
+### ビルドエラー
+
+```bash
+# クリーンビルド
+./gradlew clean build
+
+# Gradleキャッシュをクリア
+./gradlew --stop
+./gradlew clean build
+```
+
+---
 
 ## コントリビューション
 
@@ -157,6 +289,8 @@ todo/
 3. 変更をコミット (`git commit -m 'Add amazing feature'`)
 4. ブランチにプッシュ (`git push origin feature/amazing-feature`)
 5. プルリクエストを作成
+
+---
 
 ## ライセンス
 

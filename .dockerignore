@@ -1,0 +1,57 @@
+# .dockerignore
+# Dockerビルド時に除外するファイル
+
+# Git関連
+.git
+.gitignore
+.gitattributes
+
+# IDE設定
+.idea
+*.iml
+*.ipr
+*.iws
+.vscode
+.settings
+.project
+.classpath
+
+# ビルド成果物（Dockerイメージ内で再ビルドするため）
+build/
+target/
+out/
+bin/
+
+# Gradle
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+
+# 環境変数・機密情報
+.env
+.env.*
+!.env.example
+*.properties.local
+application-dev.properties
+application-prod.properties
+
+# ログ
+*.log
+logs/
+
+# OS固有
+.DS_Store
+Thumbs.db
+
+# ドキュメント（イメージサイズ削減のため）
+doc/
+*.md
+!README.md
+
+# テストデータ
+test-data/
+
+# 一時ファイル
+*.tmp
+*.swp
+*~
+

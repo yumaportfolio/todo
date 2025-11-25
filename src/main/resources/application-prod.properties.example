@@ -1,0 +1,47 @@
+# 本番環境用設定（環境変数ベース）
+
+# ===================================
+# データベース設定
+# ===================================
+spring.datasource.url=${DB_URL}
+spring.datasource.username=${DB_USERNAME}
+spring.datasource.password=${DB_PASSWORD}
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# ===================================
+# JPA / Hibernate設定
+# ===================================
+# 本番環境ではSQLログを無効化
+spring.jpa.show-sql=false
+# DDL自動更新を無効化（Flywayやマイグレーションツール使用推奨）
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+
+# ===================================
+# Thymeleaf設定
+# ===================================
+# 本番環境ではキャッシュを有効化
+spring.thymeleaf.cache=true
+spring.thymeleaf.prefix=classpath:/templates/
+spring.thymeleaf.suffix=.html
+
+# ===================================
+# サーバー設定
+# ===================================
+server.port=${SERVER_PORT:8080}
+
+# エラーページのカスタマイズ
+server.error.whitelabel.enabled=false
+
+# ===================================
+# ロギング設定
+# ===================================
+logging.level.root=INFO
+logging.level.com.example.todo=INFO
+logging.pattern.console=%d{yyyy-MM-dd HH:mm:ss} - %msg%n
+
+# ===================================
+# セキュリティ設定
+# ===================================
+# 本番環境では必要に応じてSpring Securityを追加
+
