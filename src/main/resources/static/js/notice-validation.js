@@ -79,6 +79,28 @@ function validateDateRange(startValue, endValue) {
     return null;
 }
 
+
+/**
+ * 過去日付でないかチェック（今日以降の日付のみ許可）
+ * @param {string} value - チェック対象の日付文字列 (YYYY-MM-DD形式)
+ * @param {string} fieldName - フィールド名
+ * @returns {string|null} エラーメッセージまたはnull
+ */
+function validateNotPastDate(value, fieldName) {
+    if (!value || !isValidDateString(value)) {
+        return null; // 空欄や不正形式は他のバリデーションで処理
+    }
+
+    const inputDate = new Date(value);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // 時刻をリセットして日付のみで比較
+
+    if (inputDate < today) {
+        return `${fieldName}には今日以降の日付を入力してください。`;
+    }
+    return null;
+}
+
 /**
  * エラーダイアログを表示
  * @param {Array<string>} messages - エラーメッセージ配列
@@ -137,11 +159,32 @@ function validateNoticeForm(form) {
     const endDateError = validateDateField(form.endDate, '適用終了日');
     if (endDateError) errors.push(endDateError);
 
-    // 日付範囲チェック
-    if (!errors.length) {
+    // 日付範囲チェック（形式チェック後、過去日付チェック前に実行）
+    let hasRangeError = false;
+    if (!startDateError && !endDateError) {
         const rangeError = validateDateRange(form.startDate.value.trim(), form.endDate.value.trim());
-        if (rangeError) errors.push(rangeError);
+        if (rangeError) {
+            errors.push(rangeError);
+            hasRangeError = true;
+        }
     }
+
+    // 過去日付チェック（日付範囲エラーがない場合のみ実行）
+    if (!hasRangeError) {
+        if (!postDateError) {
+            const postDatePastError = validateNotPastDate(form.postDate.value.trim(), '掲載日');
+            if (postDatePastError) errors.push(postDatePastError);
+        }
+        if (!startDateError) {
+            const startDatePastError = validateNotPastDate(form.startDate.value.trim(), '適用開始日');
+            if (startDatePastError) errors.push(startDatePastError);
+        }
+        if (!endDateError) {
+            const endDatePastError = validateNotPastDate(form.endDate.value.trim(), '適用終了日');
+            if (endDatePastError) errors.push(endDatePastError);
+        }
+    }
+
 
     // 内容
     const content = form.content.value.trim();
